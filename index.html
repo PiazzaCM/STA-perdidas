@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modelo Secuencial</title>
+  </head>
+  <body>
+    <h1>TensorFlow.js</h1>
+
+    <form>
+      <label for="nro">Formula: 2x+6</label>
+      <input type="text" id="nro" />
+      <button type="button" onclick="predict()">Predecir</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+    <script>
+      const model = tf.sequential();
+
+      async function entrenar() {
+        const epocas = 250;
+
+        model.add(tf.layers.dense({ units: 1, inputShape: [1] }));
+
+        model.compile({ loss: "meanSquaredError", optimizer: "sgd" });
+
+        const xs = tf.tensor2d([-6, -4, -1, 1, 3, 5, 7, 10, 12], [9, 1]);
+        const ys = tf.tensor2d([-6, -2, 4, 8, 12, 16, 20, 26, 30], [9, 1]);
+
+        const surface = { name: "Loss", tab: "Training" };
+        const history = [];
+
+        await model.fit(xs, ys, {
+          epochs: 680,
+          callbacks: {
+            onEpochEnd: (epoch, logs) => {
+              history.push(logs);
+              tfvis.show.history(surface, history, ["loss"]);
+            },
+          },
+        });
+      }
+
+      entrenar();
+
+      const predict = () => {
+        const x = parseInt(document.getElementById("nro").value);
+
+        document.getElementById("result").innerText = model
+          .predict(tf.tensor2d([x], [1, 1]))
+          .dataSync();
+      };
+    </script>
+  </body>
+</html>
